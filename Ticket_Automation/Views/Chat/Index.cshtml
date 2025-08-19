@@ -1,0 +1,41 @@
+﻿@{
+    ViewData["Title"] = "Yapay Zeka Asistanı";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-gradient-primary text-white d-flex align-items-center">
+                    <i class="fas fa-robot fa-lg me-2"></i>
+                    <h4 class="mb-0">Yapay Zeka Asistanı</h4>
+                </div>
+                <div class="card-body bg-light">
+                    <form asp-controller="Chat" asp-action="Ask" method="post" class="mb-4">
+                        <div class="input-group shadow-sm">
+                            <input type="text" name="question" class="form-control form-control-lg" placeholder="Bir soru yazın..." required />
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-1"></i> Gönder
+                            </button>
+                        </div>
+                    </form>
+
+                    @if (ViewBag.Answer != null)
+                    {
+                        <div class="response-box p-4 bg-white rounded shadow-sm">
+                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-question-circle me-2"></i>Sorduğunuz:</h6>
+                            <p class="text-dark border-start ps-3">@ViewBag.Question</p>
+
+                            <h6 class="fw-bold text-success mt-4 mb-2"><i class="fas fa-comment-dots me-2"></i>Asistanın Yanıtı:</h6>
+                            <div class="bg-light p-3 rounded border-start border-success ps-3">
+                                <p class="mb-0">@ViewBag.Answer</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

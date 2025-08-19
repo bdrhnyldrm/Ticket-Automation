@@ -1,0 +1,65 @@
+﻿@model TicketCreateViewModel
+
+<div class="container py-4">
+    <h2 class="fw-bold text-primary mb-4">
+        <i class="fas fa-file-alt me-2"></i>Yeni Destek Talebi Oluştur
+    </h2>
+
+    <div class="card shadow border-0 p-4 rounded-4">
+        <form asp-action="Create" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+
+            <!-- Başlık -->
+            <div class="mb-4">
+                <label asp-for="Title" class="form-label text-dark fw-semibold">Başlık</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-primary text-white">
+                        <i class="fas fa-heading"></i>
+                    </span>
+                    <input asp-for="Title" class="form-control" placeholder="Destek talebi başlığı giriniz..." />
+                </div>
+                <span asp-validation-for="Title" class="text-danger small"></span>
+            </div>
+
+            <!-- Açıklama -->
+            <div class="mb-4">
+                <label asp-for="Description" class="form-label text-dark fw-semibold">Açıklama</label>
+                <textarea asp-for="Description" class="form-control" rows="5" placeholder="Sorununuzu detaylıca açıklayın..."></textarea>
+                <span asp-validation-for="Description" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label text-dark fw-semibold">Dosya Ekle (Opsiyonel)</label>
+                <input type="file" name="Attachment" class="form-control" />
+            </div>
+
+            <!-- Öncelik -->
+            <div class="mb-4">
+                <label asp-for="Priority" class="form-label text-dark fw-semibold">Öncelik</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-warning text-dark">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </span>
+                    <select asp-for="Priority" class="form-select">
+                        <option value="1">🔵 Düşük</option>
+                        <option value="2">🟡 Normal</option>
+                        <option value="3">🔴 Yüksek</option>
+                        <option value="4">🔥 Acil</option>
+                    </select>
+                </div>
+                <span asp-validation-for="Priority" class="text-danger small"></span>
+            </div>
+
+            <!-- Buton -->
+            <div class="d-grid">
+                <button type="submit" class="btn btn-success btn-lg fw-semibold shadow-sm">
+                    <i class="fas fa-paper-plane me-1"></i> Talebi Oluştur
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

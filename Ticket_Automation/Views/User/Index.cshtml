@@ -1,0 +1,62 @@
+﻿@model List<User>
+
+<div class="container py-4">
+    <h2 class="fw-bold mb-4 text-dark">👥 Kullanıcılar</h2>
+
+    <div class="mb-3">
+        <a class="btn btn-success shadow-sm" asp-action="Create">
+            <i class="fas fa-user-plus me-1"></i> Yeni Kullanıcı Ekle
+        </a>
+    </div>
+
+    <div class="user-table-wrapper shadow-sm border rounded-3">
+        <table class="table table-hover align-middle text-center mb-0">
+            <thead class="table-light">
+                <tr class="align-middle">
+                    <th class="text-start ps-4">Ad</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td class="text-start ps-4">@user.FirstName @user.LastName</td>
+                        <td>@user.Email</td>
+                        <td>
+                            <span class="badge @GetRoleBadge(user.Role.ToString())">
+                                @user.Role
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a class="btn btn-primary btn-sm" asp-action="Detail" asp-route-id="@user.Id">Görüntüle</a>
+                                <a class="btn btn-warning btn-sm" asp-action="Edit" asp-route-id="@user.Id">Düzenle</a>
+                                <form asp-action="Delete" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bu kullanıcıyı ve tüm ilişkili verileri silmek istediğinizden emin misiniz?');">Sil</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@functions {
+    public string GetRoleBadge(string role)
+    {
+        return role switch
+        {
+            "Admin" => "bg-danger text-white",
+            "Personel" => "bg-info text-dark",
+            "Customer" => "bg-secondary text-white",
+            _ => "bg-light text-muted"
+        };
+    }
+}

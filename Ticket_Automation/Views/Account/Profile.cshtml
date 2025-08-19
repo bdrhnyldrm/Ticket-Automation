@@ -1,0 +1,77 @@
+﻿@using Ticket_Automation.ViewModels.Account
+@model ProfileViewModel
+
+@{
+    ViewData["Title"] = "👤 Profilim";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary text-center">👤 Profilim</h2>
+
+    @if (ViewBag.Success != null)
+    {
+        <div class="alert alert-success text-center">
+            <i class="fas fa-check-circle"></i> @ViewBag.Success
+        </div>
+    }
+
+    <div class="card shadow-sm p-4">
+        <form asp-action="Profile" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label"><strong>Ad</strong></label>
+                    <input asp-for="FirstName" class="form-control" placeholder="Adınızı giriniz" />
+                    <span asp-validation-for="FirstName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label"><strong>Soyad</strong></label>
+                    <input asp-for="LastName" class="form-control" placeholder="Soyadınızı giriniz" />
+                    <span asp-validation-for="LastName" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Email</strong></label>
+                <input asp-for="Email" class="form-control" placeholder="Email adresinizi giriniz" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label"><strong>Telefon</strong></label>
+                <input asp-for="PhoneNumber" class="form-control" placeholder="Telefon numaranızı giriniz" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <hr class="my-4">
+            <h4 class="text-primary">🔒 Şifreyi Değiştir</h4>
+
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Mevcut Şifre</strong></label>
+                    <input asp-for="CurrentPassword" class="form-control" type="password" placeholder="Mevcut şifrenizi giriniz" />
+                    <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Yeni Şifre</strong></label>
+                    <input asp-for="NewPassword" class="form-control" type="password" placeholder="Yeni şifrenizi giriniz" />
+                    <span asp-validation-for="NewPassword" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Yeni Şifre (Tekrar)</strong></label>
+                    <input asp-for="ConfirmNewPassword" class="form-control" type="password" placeholder="Yeni şifreyi tekrar giriniz" />
+                    <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-success w-100 py-2">
+                    <i class="fas fa-save"></i> Kaydet
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

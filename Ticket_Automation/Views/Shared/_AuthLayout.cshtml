@@ -1,0 +1,78 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/auth.css" />
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-left">
+            <div class="slider-content active">
+                <img src="~/images/slider1.png" />
+                <h4>Akıllı Destek Takibi</h4>
+                <p>Müşteri taleplerini hızlı ve kolay yönetin.</p>
+            </div>
+            <div class="slider-content">
+                <img src="~/images/slider2.png" />
+                <h4>Kolay Kullanım</h4>
+                <p>Basit ve sezgisel arayüz ile işlerinizi kolaylaştırın.</p>
+            </div>
+            <div class="slider-content">
+                <img src="~/images/slider3.png" />
+                <h4>Anlık Bildirimler</h4>
+                <p>Sistemden gelen güncellemeleri anlık alın.</p>
+            </div>
+
+            <div class="slider-dots">
+                <span class="active"></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <div class="auth-right">
+            <div class="form-container">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Slider
+        const slides = document.querySelectorAll(".slider-content");
+        const dots = document.querySelectorAll(".slider-dots span");
+        let current = 0;
+
+        function showSlide(index) {
+            slides.forEach((s, i) => {
+                s.classList.toggle("active", i === index);
+                dots[i].classList.toggle("active", i === index);
+            });
+        }
+
+        dots.forEach((dot, i) => {
+            dot.addEventListener("click", () => {
+                current = i;
+                showSlide(current);
+            });
+        });
+
+        setInterval(() => {
+            current = (current + 1) % slides.length;
+            showSlide(current);
+        }, 5000);
+
+        showSlide(current);
+    </script>
+</body>
+</html>

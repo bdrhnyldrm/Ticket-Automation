@@ -1,0 +1,116 @@
+﻿@using System.Security.Claims
+@inject Ticket_Automation.Entity.DatabaseContext _context
+@{
+    var userId = 0;
+    if (User.Identity.IsAuthenticated)
+    {
+        userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+    }
+
+    var unreadCount = _context.Notifications
+                        .Where(n => n.UserId == userId && !n.IsRead)
+                        .Count();
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] - HelpMaster</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar p-0">
+            <div class="logo text-white text-center py-4">
+                <i class="fas fa-headset me-2"></i> HelpMaster
+            </div>
+            <nav class="nav flex-column px-3">
+                <a class="nav-link @((ViewContext.RouteData.Values["controller"] as string) == "Home" ? "active" : "")" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-home me-2"></i> Dashboard
+                </a>
+                <a class="nav-link" asp-controller="Ticket" asp-action="List">
+                    <i class="fas fa-ticket-alt me-2"></i> Destek Talepleri
+                </a>
+                <a class="nav-link" asp-controller="Notification" asp-action="List">
+                    <i class="fas fa-bell me-2"></i> Bildirimler
+                    @if (unreadCount > 0)
+                    {
+                        <span class="badge bg-danger ms-2">@unreadCount</span>
+                    }
+                </a>
+                @if (User.IsInRole("Admin"))
+                {
+                    <a class="nav-link" asp-controller="User" asp-action="Index">
+                        <i class="fas fa-users-cog me-2"></i> Kullanıcılar
+                    </a>
+                    <a class="nav-link" asp-controller="Reports" asp-action="Index">
+                        <i class="fas fa-chart-bar me-2"></i> Raporlar
+                    </a>
+                }
+                <a class="nav-link" asp-controller="Chat" asp-action="Index">
+                    <i class="fa-solid fa-robot me-2"></i> Yapay Zeka Asistanı
+                </a>
+            </nav>
+
+            <div class="text-center px-3 mt-auto mb-5">
+                <img src="~/images/robot4.png" alt="Yapay Zeka" style="max-width: 400px; width: 100%; border-radius: 12px;" />
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="content-wrapper">
+            <!-- Top Bar -->
+            <div class="topbar d-flex justify-content-between align-items-center">
+                <div class="position-relative w-100">
+                    <h5 class="fw-bold mb-0">@ViewData["Title"]</h5>
+                    <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 14px;" class="text-muted fst-italic d-none d-md-block">
+                        “Bugün harika bir iş çıkarmaya hazır mısın?” 🌟
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-4">
+                    <div class="d-flex align-items-center gap-3 text-muted small">
+                        <div><i class="fas fa-clock me-1"></i> @DateTime.Now.ToString("HH:mm")</div>
+                        <div><i class="fas fa-map-marker-alt text-primary me-1"></i> Türkiye</div>
+                    </div>
+
+                    <!-- Kullanıcı -->
+                    <div class="dropdown">
+                        <a href="#" class="text-dark text-decoration-none dropdown-toggle d-flex align-items-center user-menu" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="/images/turkey-flag.png" alt="TR" width="24" class="me-2" />
+                            <span>@User.FindFirst(ClaimTypes.Name)?.Value</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end shadow border-0 p-3" style="width: 250px;">
+                            <div class="mb-2">
+                                <strong>@User.FindFirst(ClaimTypes.Name)?.Value</strong><br />
+                                <small class="text-muted">Hesap detayları ve daha fazlası...</small>
+                            </div>
+                            <hr class="my-2" />
+                            <a class="dropdown-item py-2" asp-controller="Account" asp-action="Profile">
+                                <i class="fas fa-user me-2 text-primary"></i> Profilim
+                            </a>
+                            <a class="dropdown-item py-2" asp-controller="Account" asp-action="Logout">
+                                <i class="fas fa-sign-out-alt me-2 text-danger"></i> Çıkış Yap
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sayfa İçeriği -->
+            <div class="main-content">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

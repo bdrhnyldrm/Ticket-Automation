@@ -1,0 +1,92 @@
+﻿@model List<Ticket>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary fw-bold">
+            <i class="fas fa-ticket-alt me-2"></i>Destek Talepleri
+        </h2>
+        <a class="btn btn-primary shadow-sm d-flex align-items-center" asp-action="Create">
+            <i class="fas fa-plus-circle me-2"></i> Yeni Destek Talebi Oluştur
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            <h5 class="mb-4 text-secondary">Toplam Talepler: <strong class="text-dark">@Model.Count</strong></h5>
+            <div class="table-responsive user-table-wrapper">
+                <table class="table table-hover align-middle text-center">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="text-start">Başlık</th>
+                            <th class="text-start">Açıklama</th>
+                            <th>Öncelik</th>
+                            <th>Durum</th>
+                            <th>Oluşturan</th>
+                            <th>Atanan</th>
+                            <th>Oluşturulma</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var ticket in Model)
+                        {
+                            <tr>
+                                <td class="text-start fw-semibold">@ticket.Title</td>
+                                <td class="text-muted text-start" style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">@ticket.Description</td>
+                                <td>
+                                    <span class="ticket-status-badge @(ticket.Priority switch
+                                          {
+                                              Ticket_Automation.Entity.TicketPriority.High => "ticket-priority-high",
+                                              Ticket_Automation.Entity.TicketPriority.Normal => "ticket-priority-normal",
+                                              Ticket_Automation.Entity.TicketPriority.Low => "ticket-priority-low",
+                                              _ => ""
+                                          })">
+                                    @ticket.Priority
+                                </span>
+                            </td>
+                            <td>
+                                <span class="ticket-status-badge @(ticket.Status switch
+                                      {
+                                          Ticket_Automation.Entity.TicketStatus.Open => "ticket-status-open",
+                                          Ticket_Automation.Entity.TicketStatus.Solved => "ticket-status-solved",
+                                          Ticket_Automation.Entity.TicketStatus.Closed => "ticket-status-closed",
+                                          _ => ""
+                                      })">
+                                    @ticket.Status
+                                </span>
+                            </td>
+                            <td>@ticket.CreatedBy.FirstName @ticket.CreatedBy.LastName</td>
+                            <td>
+                                @if (ticket.AssignedTo != null)
+                                    {
+                                        <span class="text-primary fw-semibold">@ticket.AssignedTo.FirstName @ticket.AssignedTo.LastName</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted fst-italic">Atanmadı</span>
+                                    }
+                                </td>
+                                <td><small class="text-muted">@ticket.CreatedAt.ToString("yyyy-MM-dd HH:mm")</small></td>
+                                <td>
+                                    <a class="btn btn-sm px-3 py-1" style="background-color: #f0f4ff; color: #007bff; border: 1px solid #d6e4ff; border-radius: 10px; font-weight: 500;" asp-action="Detail" asp-route-id="@ticket.Id">
+                                        <i class="fas fa-arrow-right me-1"></i> Detay
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="fas fa-folder-open fa-2x mb-2"></i>
+                                    <p class="mb-0">Henüz bir destek talebi yok.</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

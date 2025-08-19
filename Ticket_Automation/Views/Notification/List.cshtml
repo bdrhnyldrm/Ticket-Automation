@@ -1,0 +1,69 @@
+﻿@model List<Notification>
+@using Ticket_Automation.Entity
+
+<div class="container py-4">
+    <h2 class="fw-bold mb-4 text-dark d-flex align-items-center">
+        <i class="fas fa-bell text-warning me-2"></i> Bildirimler
+    </h2>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted">
+            <i class="fas fa-bell-slash fa-2x mb-3"></i>
+            <p class="fs-5">Henüz bir bildiriminiz yok.</p>
+        </div>
+    }
+    else
+    {
+        <div class="notification-list">
+            @foreach (var n in Model)
+            {
+                var (icon, title, borderClass, iconColor) = n.NotificationType switch
+                {
+                    NotificationType.NewTicket => ("fa-file-alt", "Yeni Ticket", "border-left-blue", "icon-blue"),
+                    NotificationType.NewMessage => ("fa-envelope", "Yeni Mesaj", "border-left-cyan", "icon-cyan"),
+                    NotificationType.TicketAssigned => ("fa-user-check", "Ticket Ataması", "border-left-purple", "icon-purple"),
+                    NotificationType.TicketUpdated => ("fa-sync", "Güncelleme", "border-left-yellow", "icon-yellow"),
+                    _ => ("fa-question-circle", "Bilinmeyen", "border-left-gray", "icon-gray")
+                };
+
+                var text = n.NotificationType switch
+                {
+                    NotificationType.NewTicket => $"Yeni Ticket Oluşturuldu: '{n.Ticket?.Title}'",
+                    NotificationType.NewMessage => $"'{n.Ticket?.Title}' - bir mesajınız var.",
+                    NotificationType.TicketAssigned => $"'{n.Ticket?.Title}' - Bu ticket size atandı.",
+                    NotificationType.TicketUpdated => $"'{n.Ticket?.Title}' - Ticket durumu güncellendi.",
+                    _ => "Bilinmeyen bildirim"
+                };
+
+                <div class="notification-item @borderClass @(n.IsRead ? "opacity-50" : "")">
+                    <div class="notification-main">
+
+                        <div class="notification-left">
+                            <i class="fas @icon notification-icon @iconColor"></i>
+
+                            <div class="notification-text">
+                                <div class="title">@title</div>
+                                <div class="desc">@text</div>
+                            </div>
+                        </div>
+
+                        <form asp-action="MarkAsRead" asp-route-notificationId="@n.Id" method="post" class="m-0">
+                            <button type="submit" class="btn-detail">
+                                <i class="fas fa-arrow-right me-1"></i> Detay
+                            </button>
+                        </form>
+
+                        <div class="notification-date text-end">
+                            @n.CreatedAt.ToString("yyyy-MM-dd HH:mm")
+                            @if (n.IsRead)
+                            {
+                                <span class="badge bg-secondary ms-2">Okundu</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

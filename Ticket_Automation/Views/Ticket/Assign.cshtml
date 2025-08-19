@@ -1,0 +1,35 @@
+﻿@model Ticket
+@{
+    var personelList = (List<Ticket_Automation.Entity.User>)ViewBag.PersonelList;
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4 text-primary">👤 Personel Ata - <span class="text-secondary">@Model.Title</span></h2>
+
+    <div class="card shadow-sm p-4">
+        <form asp-action="Assign" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ticketId" value="@Model.Id" />
+
+            <div class="mb-4">
+                <label for="assignedToId" class="form-label"><strong>Personel Seç</strong></label>
+                <div class="input-group">
+                    <span class="input-group-text bg-primary text-white"><i class="fas fa-user-tie"></i></span>
+                    <select name="assignedToId" class="form-select">
+                        <option disabled selected>Personel Seçiniz...</option>
+                        @foreach (var personel in personelList)
+                        {
+                            <option value="@personel.Id">@personel.FirstName @personel.LastName</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-success w-100 py-2">
+                    <i class="fas fa-check-circle"></i> Personel Ata
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

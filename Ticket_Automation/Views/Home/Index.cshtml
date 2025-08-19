@@ -1,0 +1,262 @@
+﻿@using Ticket_Automation.Entity
+@model User
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-xl">
+    <h3 class="fw-bold mb-4">Merhaba, @Model.FirstName 👋</h3>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <!-- Admin Statistics -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card text-center shadow-sm border-0 p-3">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h6 class="fw-bold">Toplam Kullanıcı</h6>
+                    <h4>@ViewBag.TotalUsers</h4>
+                    <div class="small text-muted mt-1">
+                        Admin: @ViewBag.AdminUsers<br />
+                        Personel: @ViewBag.PersonelUsers<br />
+                        Müşteri: @ViewBag.CustomerUsers
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center shadow-sm border-0 p-3">
+                    <i class="fas fa-tasks fa-2x text-info mb-2"></i>
+                    <h6 class="fw-bold">Açık Talepler</h6>
+                    <h4>@ViewBag.ActiveTickets</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center shadow-sm border-0 p-3">
+                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                    <h6 class="fw-bold">Çözülen</h6>
+                    <h4>@ViewBag.SolvedTickets</h4>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center shadow-sm border-0 p-3">
+                    <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                    <h6 class="fw-bold">Kapalı</h6>
+                    <h4>@ViewBag.ClosedTickets</h4>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Grafikler Yan Yana Küçük Boyutlu -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 p-3" style="height: 300px;">
+                    <h6 class="fw-bold text-center mb-2">Taleplerin Dağılımı</h6>
+                    <div style="height: 220px;">
+                        <canvas id="adminChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 p-3" style="height: 300px;">
+                    <h6 class="fw-bold text-center mb-2">Kullanıcı Dağılımı</h6>
+                    <div style="height: 220px;">
+                        <canvas id="userChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+
+    @if (User.IsInRole("Personel"))
+{
+    <div class="mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">Atanan Talepleriniz</h4>
+        </div>
+
+        @if (Model.AssignedTickets.Any())
+        {
+            <div class="row g-4 mb-4">
+                @foreach (var ticket in Model.AssignedTickets)
+                {
+                    var badgeClass = ticket.Status.ToString() switch
+                    {
+                        "Open" => "ticket-status-badge ticket-status-open",
+                        "Solved" => "ticket-status-badge ticket-status-solved",
+                        "Closed" => "ticket-status-badge ticket-status-closed",
+                        _ => "ticket-status-badge"
+                    };
+
+                    <div class="col-md-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-body d-flex flex-column justify-content-between">
+                                <div>
+                                    <h5 class="card-title fw-bold">@ticket.Title</h5>
+                                    <p class="card-text text-muted small">
+                                        @ticket.Description.Substring(0, Math.Min(ticket.Description.Length, 100))...
+                                    </p>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="@badgeClass">@ticket.Status</span>
+                                    <a href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })" class="btn btn-outline-primary btn-sm">
+                                        Detay
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Personel Grafik -->
+            <div class="card shadow-sm border-0 p-4" style="height: 320px;">
+                <h6 class="fw-bold mb-3 text-center">Atanan Taleplerin Durumu</h6>
+                <div style="height: 220px;">
+                    <canvas id="personelChart"></canvas>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="text-center mt-5">
+                <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" alt="No Tickets" style="width:150px;" class="mb-4" />
+                <h5 class="text-muted">Size atanmış destek talebi bulunmamaktadır.</h5>
+            </div>
+        }
+    </div>
+}
+
+    }
+
+    @if (User.IsInRole("Customer"))
+    {
+        <div class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="fw-bold mb-0">Destek Talepleriniz</h4>
+                <a class="btn btn-success btn-lg" asp-controller="Ticket" asp-action="Create">
+                    <i class="fas fa-plus me-2"></i>Yeni Talep Oluştur
+                </a>
+            </div>
+
+            @if (ViewBag.CustomerTickets != null && ViewBag.CustomerTickets.Count > 0)
+            {
+                <div class="row g-4">
+                    @foreach (var ticket in ViewBag.CustomerTickets)
+                    {
+                        var badgeClass = ticket.Status.ToString() switch
+                        {
+                            "Open" => "ticket-status-badge ticket-status-open",
+                            "Solved" => "ticket-status-badge ticket-status-solved",
+                            "Closed" => "ticket-status-badge ticket-status-closed",
+                            _ => "ticket-status-badge"
+                        };
+
+                        <div class="col-md-4">
+                            <div class="card shadow-sm border-0 h-100">
+                                <div class="card-body d-flex flex-column justify-content-between">
+                                    <div>
+                                        <h5 class="card-title fw-bold">@ticket.Title</h5>
+                                        <p class="card-text text-muted small">
+                                            @ticket.Description.Substring(0, Math.Min(ticket.Description.Length, 100))...
+                                        </p>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <span class="@badgeClass">@ticket.Status</span>
+                                        <a href="@Url.Action("Detail", "Ticket", new { id = ticket.Id })" class="btn btn-outline-primary btn-sm">
+                                            Detay
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center mt-5">
+                    <img src="https://cdn-icons-png.flaticon.com/512/4076/4076549.png" alt="No Tickets" style="width:150px;" class="mb-4" />
+                    <h5 class="text-muted">Henüz bir destek talebi oluşturmadınız.</h5>
+                    <a class="btn btn-success btn-lg mt-3" asp-controller="Ticket" asp-action="Create">
+                        <i class="fas fa-plus me-2"></i>Yeni Talep Oluştur
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    @if (User.IsInRole("Admin"))
+    {
+        <script>
+            new Chart(document.getElementById('adminChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Açık', 'Çözülen', 'Kapalı'],
+                    datasets: [{
+                        data: [@ViewBag.ActiveTickets, @ViewBag.SolvedTickets, @ViewBag.ClosedTickets],
+                        backgroundColor: ['#007bff', '#28a745', '#dc3545']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+
+            new Chart(document.getElementById('userChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Admin', 'Personel', 'Müşteri'],
+                    datasets: [{
+                        data: [@ViewBag.AdminUsers, @ViewBag.PersonelUsers, @ViewBag.CustomerUsers],
+                        backgroundColor: ['#6610f2', '#20c997', '#ffc107']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        </script>
+    }
+
+    @if (User.IsInRole("Personel") && Model.AssignedTickets.Any())
+    {
+        <script>
+            const personelData = {
+                Açık: @Model.AssignedTickets.Count(t => t.Status == TicketStatus.Open),
+                Çözüldü: @Model.AssignedTickets.Count(t => t.Status == TicketStatus.Solved),
+                Kapalı: @Model.AssignedTickets.Count(t => t.Status == TicketStatus.Closed)
+            };
+
+            new Chart(document.getElementById('personelChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(personelData),
+                    datasets: [{
+                        label: 'Talepler',
+                        data: Object.values(personelData),
+                        backgroundColor: ['#17a2b8', '#28a745', '#6c757d']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        </script>
+    }
+}

@@ -1,0 +1,220 @@
+﻿@model Ticket
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using Ticket_Automation.Entity
+
+@{
+    ViewData["Title"] = "Destek Talebi Detayı";
+
+    var statusList = new List<SelectListItem>
+    {
+        new SelectListItem("Açık",    ((int)TicketStatus.Open).ToString(),   Model.Status == TicketStatus.Open),
+        new SelectListItem("Çözüldü", ((int)TicketStatus.Solved).ToString(), Model.Status == TicketStatus.Solved),
+        new SelectListItem("Kapalı",  ((int)TicketStatus.Closed).ToString(), Model.Status == TicketStatus.Closed),
+    };
+
+    string GetStatusCss(TicketStatus status) => status switch
+    {
+        TicketStatus.Open => "ticket-status-badge ticket-status-open",
+        TicketStatus.Solved => "ticket-status-badge ticket-status-solved",
+        TicketStatus.Closed => "ticket-status-badge ticket-status-closed",
+        _ => "ticket-status-badge"
+    };
+
+    string GetPriorityCss(TicketPriority? priority) => priority switch
+    {
+        TicketPriority.Low => "ticket-status-badge ticket-priority-low",
+        TicketPriority.Normal => "ticket-status-badge ticket-priority-normal",
+        TicketPriority.High => "ticket-status-badge ticket-priority-high",
+        TicketPriority.Urgent => "ticket-status-badge ticket-priority-urgent",
+        _ => "ticket-status-badge"
+    };
+}
+
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- SOL: Ticket Detayları ve Mesajlar -->
+        <div class="col-lg-8">
+          <div class="ticket-meta-card position-relative">
+    <div class="d-flex justify-content-between flex-wrap mb-3">
+        <h3 class="fw-bold text-dark">@Model.Title</h3>
+        <div class="text-muted small d-flex align-items-center">
+            <i class="fas fa-calendar-alt me-1"></i>
+            @Model.CreatedAt.ToString("dd MMM yyyy HH:mm")
+        </div>
+    </div>
+
+    <p class="text-muted small mb-4">@Model.Description</p>
+
+    @if (!string.IsNullOrEmpty(Model.AttachmentPath))
+{
+    <div class="mb-3">
+        <a href="@Model.AttachmentPath" class="btn btn-outline-primary" target="_blank">
+            <i class="fas fa-paperclip"></i> Dosyayı Görüntüle / İndir
+        </a>
+    </div>
+}
+
+    <hr />
+
+    <!-- Bilgi Satırı: Oluşturan | Durum | Öncelik | Atanan -->
+    <div class="row text-center text-sm">
+        <div class="col-6 col-md-3">
+            <div class="label">Oluşturan</div>
+            <div class="value text-primary fw-semibold">
+                @Model.CreatedBy.FirstName @Model.CreatedBy.LastName
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="label">Durum</div>
+            <div class="value">
+                <span class="@GetStatusCss(Model.Status)">@GetStatusText(Model.Status)</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 mt-3 mt-md-0">
+            <div class="label">Öncelik</div>
+            <div class="value">
+                <span class="@GetPriorityCss(Model.Priority)">@Model.Priority</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3 mt-3 mt-md-0">
+            <div class="label">Atanan</div>
+            <div class="value text-success fw-semibold">
+                @if (Model.AssignedTo != null)
+                {
+                    @($"{Model.AssignedTo.FirstName} {Model.AssignedTo.LastName}")
+                }
+                else
+                {
+                    <span class="fst-italic text-muted">Atanmadı</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+            <!-- Mesajlar -->
+            <div class="card shadow-sm border-0 mt-4 p-4">
+                <h5 class="fw-bold text-primary mb-3"><i class="fas fa-comments me-2"></i>Mesajlar</h5>
+
+                <div class="message-flex-wrapper">
+                    <div class="messages-section flex-fill">
+                        @if (Model.Messages.Any())
+                        {
+                            @foreach (var message in Model.Messages.OrderByDescending(m => m.SentAt))
+                            {
+                                <div class="message-item">
+                                    <div class="message-left">
+                                        <div class="sender">@message.Sender.FirstName @message.Sender.LastName</div>
+                                        <div class="content">@message.Content</div>
+                                    </div>
+                                    <div class="message-right">
+                                        @message.SentAt.ToString("dd.MM.yyyy HH:mm")
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-muted text-center fst-italic">Henüz mesaj yok.</div>
+                        }
+                    </div>
+
+                    @if (Model.Status != TicketStatus.Solved)
+                    {
+                        <div class="new-message-form">
+                            <h6 class="fw-bold mb-2">✉️ Yeni Mesaj</h6>
+                            <form asp-action="AddMessage" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="ticketId" value="@Model.Id" />
+                                <div class="mb-2">
+                                    <textarea name="content" class="form-control" rows="5" placeholder="Mesajınızı yazınız..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-paper-plane me-1"></i> Gönder
+                                </button>
+                            </form>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- SAĞ: Admin İşlemleri -->
+        <div class="col-lg-4">
+            @if (User.IsInRole("Admin"))
+            {
+                <div class="card shadow-sm border-0 mb-4 p-4">
+                    <h5 class="fw-bold mb-3">⚡ Durum Güncelle</h5>
+                    <form asp-action="UpdateStatus" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <select asp-for="Status" asp-items="statusList" class="form-select form-select-sm border border-2 border-secondary-subtle rounded-3 shadow-sm mb-3"></select>
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="fas fa-sync-alt me-1"></i> Güncelle
+                        </button>
+                    </form>
+                </div>
+
+
+                    <!-- Personel Ata Butonu ve Modal -->
+                <div class="card shadow-sm border-0 p-4">
+                    <h5 class="fw-bold mb-3">👤 Personel Ata</h5>
+                    <button class="btn btn-success w-100" data-bs-toggle="modal" data-bs-target="#assignModal">
+                        <i class="fas fa-user-plus me-1"></i> Ata
+                    </button>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="assignModal" tabindex="-1" aria-labelledby="assignModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title" id="assignModalLabel">Personel Ata - <span class="text-warning">@Model.Title</span></h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form asp-action="Assign" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="ticketId" value="@Model.Id" />
+
+                                    <div class="mb-3">
+                                        <label for="assignedToId" class="form-label fw-semibold">Personel Seçiniz:</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-primary text-white"><i class="fas fa-user-tie"></i></span>
+                                            <select name="assignedToId" class="form-select" required>
+                                                <option disabled selected value="">Personel Seç...</option>
+                                                @foreach (var personel in (List<Ticket_Automation.Entity.User>)ViewBag.PersonelList)
+                                                {
+                                                    <option value="@personel.Id">@personel.FirstName @personel.LastName</option>
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check-circle me-1"></i> Ata
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    private string GetStatusText(TicketStatus status)
+    {
+        return status switch
+        {
+            TicketStatus.Open => "Açık",
+            TicketStatus.Solved => "Çözüldü",
+            TicketStatus.Closed => "Kapalı",
+            _ => "Bilinmiyor"
+        };
+    }
+}

@@ -1,0 +1,49 @@
+﻿@model Ticket_Automation.ViewModels.Reports.ReportViewModel
+
+@{
+    ViewData["Title"] = "Raporlar";
+}
+
+<div class="container py-4">
+    <h2 class="fw-bold mb-4">📊 Raporlar</h2>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 text-center">
+                <h5>Toplam Talepler</h5>
+                <h3 class="fw-bold">@Model.TotalTickets</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 text-center">
+                <h5>Açık Talepler</h5>
+                <h3 class="fw-bold">@Model.OpenTickets</h3>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 text-center">
+                <h5>Çözülen Talepler</h5>
+                <h3 class="fw-bold">@Model.SolvedTickets</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <a class="btn btn-danger" asp-action="DownloadTopPersonnelReport">
+            <i class="fas fa-file-pdf me-1"></i> PDF Olarak İndir
+        </a>
+    </div>
+
+    <div class="card shadow-sm p-4">
+        <h5 class="fw-bold mb-3">En Çok Atama Yapılan Personeller</h5>
+        <ul class="list-group">
+            @foreach (var p in Model.TopPersonnel)
+            {
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>@p.Name</span>
+                    <span class="badge bg-info text-dark">@p.AssignedCount Ticket</span>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
